@@ -61,5 +61,5 @@ The command lines are made only of one word. No arguments will be passed to prog
 If an executable cannot be found, prints an error message and display the prompt again...
 
 Authors ✒️
-Fatma Osman
+Fatma Osman |
 Anisah Omar
