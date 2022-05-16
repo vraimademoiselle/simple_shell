@@ -65,12 +65,12 @@ char *_strcat(char *dest, const char *src)
 
 /**
  * _strncat - Concantenates two strings where n number
- *            of bytes are copied from source.
- * @dest: Pointer to destination string.
- * @src: Pointer to source string.
- * @n: n bytes to copy from src.
+ *            of bytes are copied from source
+ * @dest: Pointer to destination string
+ * @src: Pointer to source string
+ * @n: n bytes to copy from src
  *
- * Return: Pointer to destination string.
+ * Return: Pointer to destination string
  */
 char *_strncat(char *dest, const char *src, size_t n)
 {
@@ -82,4 +82,4 @@ char *_strncat(char *dest, const char *src, size_t n)
 	dest[dest_len + i] = '\0';
 
 	return (dest);
-}
+i}
