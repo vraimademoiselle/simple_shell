@@ -1,185 +1,177 @@
 #include "shell.h"
-void handle_line(char **line, ssize_t read);
-ssize_t get_new_len(char *line);
-void logical_ops(char *line, ssize_t *new_len);
 
 /**
- * handle_line - Partitions a line read from standard input as needed.
- * @line: A pointer to a line read from standard input.
- * @read: The length of line.
- *
- * Description: Spaces are inserted to separate ";", "||", and "&&".
- *              Replaces "#" with '\0'.
- */
-void handle_line(char **line, ssize_t read)
+* repeated_char - counts the repetitions of a char
+*
+* @input: input string
+* @i: index
+* Return: repetitions
+*/
+int repeated_char(char *input, int i)
 {
-	char *old_line, *new_line;
-	char previous, current, next;
-	size_t i, j;
-	ssize_t new_len;
+if (*(input - 1) == *input)
+return (repeated_char(input - 1, i + 1));
 
-	new_len = get_new_len(*line);
-	if (new_len == read - 1)
-		return;
-	new_line = malloc(new_len + 1);
-	if (!new_line)
-		return;
-	j = 0;
-	old_line = *line;
-	for (i = 0; old_line[i]; i++)
-	{
-		current = old_line[i];
-		next = old_line[i + 1];
-		if (i != 0)
-		{
-			previous = old_line[i - 1];
-			if (current == ';')
-			{
-				if (next == ';' && previous != ' ' && previous != ';')
-				{
-					new_line[j++] = ' ';
-					new_line[j++] = ';';
-					continue;
-				}
-				else if (previous == ';' && next != ' ')
-				{
-					new_line[j++] = ';';
-					new_line[j++] = ' ';
-					continue;
-				}
-				if (previous != ' ')
-					new_line[j++] = ' ';
-				new_line[j++] = ';';
-				if (next != ' ')
-					new_line[j++] = ' ';
-				continue;
-			}
-			else if (current == '&')
-			{
-				if (next == '&' && previous != ' ')
-					new_line[j++] = ' ';
-				else if (previous == '&' && next != ' ')
-				{
-					new_line[j++] = '&';
-					new_line[j++] = ' ';
-					continue;
-				}
-			}
-			else if (current == '|')
-			{
-				if (next == '|' && previous != ' ')
-					new_line[j++]  = ' ';
-				else if (previous == '|' && next != ' ')
-				{
-					new_line[j++] = '|';
-					new_line[j++] = ' ';
-					continue;
-				}
-			}
-		}
-		else if (current == ';')
-		{
-			if (i != 0 && old_line[i - 1] != ' ')
-				new_line[j++] = ' ';
-			new_line[j++] = ';';
-			if (next != ' ' && next != ';')
-				new_line[j++] = ' ';
-			continue;
-		}
-		new_line[j++] = old_line[i];
-	}
-	new_line[j] = '\0';
-
-	free(*line);
-	*line = new_line;
+return (i);
 }
 
 /**
- * get_new_len - Gets the new length of a line partitioned
- *               by ";", "||", "&&&", or "#".
- * @line: The line to check.
- *
- * Return: The new length of the line.
- *
- * Description: Cuts short lines containing '#' comments with '\0'.
- */
-
-ssize_t get_new_len(char *line)
+* error_sep_op - finds syntax errors
+*
+* @input: input string
+* @i: index
+* @last: last char read
+* Return: index of error. 0 when there are no
+* errors
+*/
+int error_sep_op(char *input, int i, char last)
 {
-	size_t i;
-	ssize_t new_len = 0;
-	char current, next;
+int count;
 
-	for (i = 0; line[i]; i++)
-	{
-		current = line[i];
-		next = line[i + 1];
-		if (current == '#')
-		{
-			if (i == 0 || line[i - 1] == ' ')
-			{
-				line[i] = '\0';
-				break;
-			}
-		}
-		else if (i != 0)
-		{
-			if (current == ';')
-			{
-				if (next == ';' && line[i - 1] != ' ' && line[i - 1] != ';')
-				{
-					new_len += 2;
-					continue;
-				}
-				else if (line[i - 1] == ';' && next != ' ')
-				{
-					new_len += 2;
-					continue;
-				}
-				if (line[i - 1] != ' ')
-					new_len++;
-				if (next != ' ')
-					new_len++;
-			}
-			else
-				logical_ops(&line[i], &new_len);
-		}
-		else if (current == ';')
-		{
-			if (i != 0 && line[i - 1] != ' ')
-				new_len++;
-			if (next != ' ' && next != ';')
-				new_len++;
-		}
-		new_len++;
-	}
-	return (new_len);
+count = 0;
+if (*input == '\0')
+return (0);
+
+if (*input == ' ' || *input == '\t')
+return (error_sep_op(input + 1, i + 1, last));
+
+if (*input == ';')
+if (last == '|' || last == '&' || last == ';')
+return (i);
+
+if (*input == '|')
+{
+if (last == ';' || last == '&')
+return (i);
+
+if (last == '|')
+{
+count = repeated_char(input, 0);
+if (count == 0 || count > 1)
+return (i);
 }
-/**
- * logical_ops - Checks a line for logical operators "||" or "&&".
- * @line: A pointer to the character to check in the line.
- * @new_len: Pointer to new_len in get_new_len function.
- */
-void logical_ops(char *line, ssize_t *new_len)
+}
+
+if (*input == '&')
 {
-	char previous, current, next;
+if (last == ';' || last == '|')
+return (i);
 
-	previous = *(line - 1);
-	current = *line;
-	next = *(line + 1);
+if (last == '&')
+{
+count = repeated_char(input, 0);
+if (count == 0 || count > 1)
+return (i);
+}
+}
 
-	if (current == '&')
-	{
-		if (next == '&' && previous != ' ')
-			(*new_len)++;
-		else if (previous == '&' && next != ' ')
-			(*new_len)++;
-	}
-	else if (current == '|')
-	{
-		if (next == '|' && previous != ' ')
-			(*new_len)++;
-		else if (previous == '|' && next != ' ')
-			(*new_len)++;
-	}
+return (error_sep_op(input + 1, i + 1, *input));
+}
+
+/**
+* first_char - finds index of the first char
+*
+* @input: input string
+* @i: index
+* Return: 1 if there is an error. 0 in other case.
+*/
+int first_char(char *input, int *i)
+{
+
+for (*i = 0; input[*i]; *i += 1)
+{
+if (input[*i] == ' ' || input[*i] == '\t')
+continue;
+
+if (input[*i] == ';' || input[*i] == '|' || input[*i] == '&')
+return (-1);
+
+break;
+}
+
+return (0);
+}
+
+/**
+* print_syntax_error - prints when a syntax error is found
+*
+* @datash: data structure
+* @input: input string
+* @i: index of the error
+* @bool: to control msg error
+* Return: no return
+*/
+void print_syntax_error(data_shell *datash, char *input, int i, int bool)
+{
+char *msg, *msg2, *msg3, *error, *counter;
+int length;
+
+if (input[i] == ';')
+{
+if (bool == 0)
+msg = (input[i + 1] == ';' ? ";;" : ";");
+else
+msg = (input[i - 1] == ';' ? ";;" : ";");
+}
+
+if (input[i] == '|')
+msg = (input[i + 1] == '|' ? "||" : "|");
+
+if (input[i] == '&')
+msg = (input[i + 1] == '&' ? "&&" : "&");
+
+msg2 = ": Syntax error: \"";
+msg3 = "\" unexpected\n";
+counter = aux_itoa(datash->counter);
+length = _strlen(datash->av[0]) + _strlen(counter);
+length += _strlen(msg) + _strlen(msg2) + _strlen(msg3) + 2;
+
+error = malloc(sizeof(char) * (length + 1));
+if (error == 0)
+{
+free(counter);
+return;
+}
+_strcpy(error, datash->av[0]);
+_strcat(error, ": ");
+_strcat(error, counter);
+_strcat(error, msg2);
+_strcat(error, msg);
+_strcat(error, msg3);
+_strcat(error, "\0");
+
+write(STDERR_FILENO, error, length);
+free(error);
+free(counter);
+}
+
+/**
+* check_syntax_error - intermediate function to
+* find and print a syntax error
+*
+* @datash: data structure
+* @input: input string
+* Return: 1 if there is an error. 0 in other case
+*/
+int check_syntax_error(data_shell *datash, char *input)
+{
+int begin = 0;
+int f_char = 0;
+int i = 0;
+
+f_char = first_char(input, &begin);
+if (f_char == -1)
+{
+print_syntax_error(datash, input, begin, 0);
+return (1);
+}
+
+i = error_sep_op(input + begin, 0, *(input + begin));
+if (i != 0)
+{
+print_syntax_error(datash, input, begin + i, 1);
+return (1);
+}
+
+return (0);
 }
