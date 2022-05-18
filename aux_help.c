@@ -1,100 +1,80 @@
 #include "shell.h"
-void help_all(void);
-void help_alias(void);
-void help_cd(void);
-void help_exit(void);
-void help_help(void);
 
 /**
- * help_all - Displays all possible builtin shellby commands.
- */
-void help_all(void)
+* aux_help_env - Help information for the builtin env
+* Return: no return
+*/
+void aux_help_env(void)
 {
-	char *msg = "Shellby\nThese shell commands are defined internally.\n";
+char *help = "env: env [option] [name=value] [command [args]]\n\t";
 
-	write(STDOUT_FILENO, msg, _strlen(msg));
-	msg = "Type 'help' to see this list.\nType 'help name' to find ";
-	write(STDOUT_FILENO, msg, _strlen(msg));
-	msg = "out more about the function 'name'.\n\n  alias   \t";
-	write(STDOUT_FILENO, msg, _strlen(msg));
-	msg = "alias [NAME[='VALUE'] ...]\n  cd    \tcd   ";
-	write(STDOUT_FILENO, msg, _strlen(msg));
-	msg = "[DIRECTORY]\n  exit    \texit [STATUS]\n  env     \tenv";
-	write(STDOUT_FILENO, msg, _strlen(msg));
-	msg = "\n  setenv  \tsetenv [VARIABLE] [VALUE]\n  unsetenv\t";
-	write(STDOUT_FILENO, msg, _strlen(msg));
-	msg = "unsetenv [VARIABLE]\n";
-	write(STDOUT_FILENO, msg, _strlen(msg));
+write(STDOUT_FILENO, help, _strlen(help));
+help = "Print the enviroment of the shell.\n";
+write(STDOUT_FILENO, help, _strlen(help));
+
+}
+/**
+* aux_help_setenv - Help information for the builtin setenv
+* Return: no return
+*/
+void aux_help_setenv(void)
+{
+
+char *help = "setenv: setenv (const char *name, const char *value,";
+
+write(STDOUT_FILENO, help, _strlen(help));
+help = "int replace)\n\t";
+write(STDOUT_FILENO, help, _strlen(help));
+help = "Add a new definition to the environment\n";
+write(STDOUT_FILENO, help, _strlen(help));
+}
+/**
+* aux_help_unsetenv - Help information for the builtin unsetenv
+* Return: no return
+*/
+void aux_help_unsetenv(void)
+{
+char *help = "unsetenv: unsetenv (const char *name)\n\t";
+
+write(STDOUT_FILENO, help, _strlen(help));
+help = "Remove an entry completely from the environment\n";
+write(STDOUT_FILENO, help, _strlen(help));
 }
 
-/**
- * help_alias - Displays information on the shellby builtin command 'alias'.
- */
-void help_alias(void)
-{
-	char *msg = "alias: alias [NAME[='VALUE'] ...]\n\tHandles aliases.\n";
 
-	write(STDOUT_FILENO, msg, _strlen(msg));
-	msg = "\n\talias: Prints a list of all aliases, one per line, in ";
-	write(STDOUT_FILENO, msg, _strlen(msg));
-	msg = "the format NAME='VALUE'.\n\talias name [name2 ...]:prints";
-	write(STDOUT_FILENO, msg, _strlen(msg));
-	msg = " the aliases name, name2, etc. one per line, in the ";
-	write(STDOUT_FILENO, msg, _strlen(msg));
-	msg = "form NAME='VALUE'.\n\talias NAME='VALUE' [...]: Defines";
-	write(STDOUT_FILENO, msg, _strlen(msg));
-	msg = " an alias for each NAME whose VALUE is given. If NAME ";
-	write(STDOUT_FILENO, msg, _strlen(msg));
-	msg = "is already an alias, replace its value with VALUE.\n";
-	write(STDOUT_FILENO, msg, _strlen(msg));
+/**
+* aux_help_general - Entry point for help information for the help builtin
+* Return: no return
+*/
+void aux_help_general(void)
+{
+char *help = "^-^ bash, version 1.0(1)-release\n";
+
+write(STDOUT_FILENO, help, _strlen(help));
+help = "These commands are defined internally.Type 'help' to see the list";
+write(STDOUT_FILENO, help, _strlen(help));
+help = "Type 'help name' to find out more about the function 'name'.\n\n ";
+write(STDOUT_FILENO, help, _strlen(help));
+help = " alias: alias [name=['string']]\n cd: cd [-L|[-P [-e]] [-@]] ";
+write(STDOUT_FILENO, help, _strlen(help));
+help = "[dir]\nexit: exit [n]\n  env: env [option] [name=value] [command ";
+write(STDOUT_FILENO, help, _strlen(help));
+help = "[args]]\n  setenv: setenv [variable] [value]\n  unsetenv: ";
+write(STDOUT_FILENO, help, _strlen(help));
+help = "unsetenv [variable]\n";
+write(STDOUT_FILENO, help, _strlen(help));
 }
-
 /**
- * help_cd - Displays information on the shellby builtin command 'cd'.
- */
-void help_cd(void)
+* aux_help_exit - Help information fot the builint exit
+* Return: no return
+*/
+void aux_help_exit(void)
 {
-	char *msg = "cd: cd [DIRECTORY]\n\tChanges the current directory of the";
+char *help = "exit: exit [n]\n Exit shell.\n";
 
-	write(STDOUT_FILENO, msg, _strlen(msg));
-	msg = " process to DIRECTORY.\n\n\tIf no argument is given, the ";
-	write(STDOUT_FILENO, msg, _strlen(msg));
-	msg = "command is interpreted as cd $HOME. If the argument '-' is";
-	write(STDOUT_FILENO, msg, _strlen(msg));
-	msg = " given, the command is interpreted as cd $OLDPWD.\n\n";
-	write(STDOUT_FILENO, msg, _strlen(msg));
-	msg = "\tThe environment variables PWD and OLDPWD are updated ";
-	write(STDOUT_FILENO, msg, _strlen(msg));
-	msg = "after a change of directory.\n";
-	write(STDOUT_FILENO, msg, _strlen(msg));
-}
-
-/**
- * help_exit - Displays information on the shellby builtin command 'exit'.
- */
-void help_exit(void)
-{
-	char *msg = "exit: exit [STATUS]\n\tExits the shell.\n\n\tThe ";
-
-	write(STDOUT_FILENO, msg, _strlen(msg));
-	msg = "STATUS argument is the integer used to exit the shell.";
-	write(STDOUT_FILENO, msg, _strlen(msg));
-	msg = " If no argument is given, the command is interpreted as";
-	write(STDOUT_FILENO, msg, _strlen(msg));
-	msg = " exit 0.\n";
-	write(STDOUT_FILENO, msg, _strlen(msg));
-}
-
-/**
- * help_help - Displays information on the shellby builtin command 'help'.
- */
-void help_help(void)
-{
-	char *msg = "help: help\n\tSee all possible Shellby builtin commands.\n";
-
-	write(STDOUT_FILENO, msg, _strlen(msg));
-	msg = "\n      help [BUILTIN NAME]\n\tSee specific information on each ";
-	write(STDOUT_FILENO, msg, _strlen(msg));
-	msg = "builtin command.\n";
-	write(STDOUT_FILENO, msg, _strlen(msg));
+write(STDOUT_FILENO, help, _strlen(help));
+help = "Exits the shell with a status of N. If N is ommited, the exit";
+write(STDOUT_FILENO, help, _strlen(help));
+help = "statusis that of the last command executed\n";
+write(STDOUT_FILENO, help, _strlen(help));
 }
