@@ -1,115 +1,106 @@
 #include "shell.h"
 
-int num_len(int num);
-char *_itoa(int num);
-int create_error(char **args, int err);
-
 /**
- * num_len - Counts the digit length of a number
- * @num: The number to measure
- *
- * Return: The digit length
- */
-int num_len(int num)
+* _strcat - concatenate two strings
+* @dest: char pointer the dest of the copied str
+* @src: const char pointer the source of str
+* Return: the dest
+*/
+char *_strcat(char *dest, const char *src)
 {
-	unsigned int num1;
-	int len = 1;
+int i;
+int j;
 
-	if (num < 0)
-	{
-		len++;
-		num1 = num * -1;
-	}
-	else
-	{
-		num1 = num;
-	}
-	while (num1 > 9)
-	{
-		len++;
-		num1 /= 10;
-	}
+for (i = 0; dest[i] != '\0'; i++)
+;
 
-	return (len);
+for (j = 0; src[j] != '\0'; j++)
+{
+dest[i] = src[j];
+i++;
 }
 
-/**
- * _itoa - Converts an integer to a string.
- * @num: The integer.
- *
- * Return: The converted string.
- */
-char *_itoa(int num)
-{
-	char *buffer;
-	int len = num_len(num);
-	unsigned int num1;
-
-	buffer = malloc(sizeof(char) * (len + 1));
-	if (!buffer)
-		return (NULL);
-
-	buffer[len] = '\0';
-
-	if (num < 0)
-	{
-		num1 = num * -1;
-		buffer[0] = '-';
-	}
-	else
-	{
-		num1 = num;
-	}
-
-	len--;
-	do {
-		buffer[len] = (num1 % 10) + '0';
-		num1 /= 10;
-		len--;
-	} while (num1 > 0);
-
-	return (buffer);
+dest[i] = '\0';
+return (dest);
 }
-
-
 /**
- * create_error - Writes a custom error message to stderr.
- * @args: An array of arguments.
- * @err: The error value.
- *
- * Return: The error value.
- */
-int create_error(char **args, int err)
+* *_strcpy - Copies the string pointed to by src.
+* @dest: Type char pointer the dest of the copied str
+* @src: Type char pointer the source of str
+* Return: the dest.
+*/
+char *_strcpy(char *dest, char *src)
 {
-	char *error;
 
-	switch (err)
-	{
-	case -1:
-		error = error_env(args);
-		break;
-	case 1:
-		error = error_1(args);
-		break;
-	case 2:
-		if (*(args[0]) == 'e')
-			error = error_2_exit(++args);
-		else if (args[0][0] == ';' || args[0][0] == '&' || args[0][0] == '|')
-			error = error_2_syntax(args);
-		else
-			error = error_2_cd(args);
-		break;
-	case 126:
-		error = error_126(args);
-		break;
-	case 127:
-		error = error_127(args);
-		break;
-	}
-	write(STDERR_FILENO, error, _strlen(error));
+size_t a;
 
-	if (error)
-		free(error);
-	return (err);
+for (a = 0; src[a] != '\0'; a++)
+{
+dest[a] = src[a];
+}
+dest[a] = '\0';
 
+return (dest);
+}
+/**
+* _strcmp - Function that compares two strings.
+* @s1: type str compared
+* @s2: type str compared
+* Return: Always 0.
+*/
+int _strcmp(char *s1, char *s2)
+{
+int i;
+
+for (i = 0; s1[i] == s2[i] && s1[i]; i++)
+;
+
+if (s1[i] > s2[i])
+return (1);
+if (s1[i] < s2[i])
+return (-1);
+return (0);
+}
+/**
+* _strchr - locates a character in a string,
+* @s: string.
+* @c: character.
+* Return: the pointer to the first occurrence of the character c.
+*/
+char *_strchr(char *s, char c)
+{
+unsigned int i = 0;
+
+for (; *(s + i) != '\0'; i++)
+if (*(s + i) == c)
+return (s + i);
+if (*(s + i) == c)
+return (s + i);
+return ('\0');
+}
+/**
+* _strspn - gets the length of a prefix substring.
+* @s: initial segment.
+* @accept: accepted bytes.
+* Return: the number of accepted bytes.
+*/
+int _strspn(char *s, char *accept)
+{
+int i, j, bool;
+
+for (i = 0; *(s + i) != '\0'; i++)
+{
+bool = 1;
+for (j = 0; *(accept + j) != '\0'; j++)
+{
+if (*(s + i) == *(accept + j))
+{
+bool = 0;
+break;
+}
+}
+if (bool == 1)
+break;
+}
+return (i);
 }

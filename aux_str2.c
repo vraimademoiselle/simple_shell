@@ -1,143 +1,129 @@
 #include "shell.h"
 
-void *_realloc(void *ptr, unsigned int old_size, unsigned int new_size);
-void assign_lineptr(char **lineptr, size_t *n, char *buffer, size_t b);
-ssize_t _getline(char **lineptr, size_t *n, FILE *stream);
-
 /**
- * _realloc - Reallocates a memory block using malloc and free
- * @ptr: A pointer to the memory previously allocated
- * @old_size: The size in bytes of the allocated space for ptr
- * @new_size: The size in bytes for the new memory block
- *
- * Return: If new_size == old_size - ptr
- *         If new_size == 0 and ptr is not NULL - NULL
- *         Otherwise - a pointer to the reallocated memory block
- */
-void *_realloc(void *ptr, unsigned int old_size, unsigned int new_size)
+* _strdup - duplicates a str in the heap memory.
+* @s: Type char pointer str
+* Return: duplicated str
+*/
+char *_strdup(const char *s)
 {
-	void *mem;
-	char *ptr_copy, *filler;
-	unsigned int index;
+char *new;
+size_t len;
 
-	if (new_size == old_size)
-		return (ptr);
-
-	if (ptr == NULL)
-	{
-		mem = malloc(new_size);
-		if (mem == NULL)
-			return (NULL);
-
-		return (mem);
-	}
-
-	if (new_size == 0 && ptr != NULL)
-	{
-		free(ptr);
-		return (NULL);
-	}
-
-	ptr_copy = ptr;
-	mem = malloc(sizeof(*ptr_copy) * new_size);
-	if (mem == NULL)
-	{
-		free(ptr);
-		return (NULL);
-	}
-
-	filler = mem;
-
-	for (index = 0; index < old_size && index < new_size; index++)
-		filler[index] = *ptr_copy++;
-
-	free(ptr);
-	return (mem);
+len = _strlen(s);
+new = malloc(sizeof(char) * (len + 1));
+if (new == NULL)
+return (NULL);
+_memcpy(new, s, len + 1);
+return (new);
 }
 
 /**
- * assign_lineptr - Reassigns the lineptr variable for _getline.
- * @lineptr: A buffer to store an input string.
- * @n: The size of lineptr.
- * @buffer: The string to assign to lineptr.
- * @b: The size of buffer.
- */
-void assign_lineptr(char **lineptr, size_t *n, char *buffer, size_t b)
+* _strlen - Returns the lenght of a string.
+* @s: Type char pointer
+* Return: Always 0.
+*/
+int _strlen(const char *s)
 {
-	if (*lineptr == NULL)
-	{
-		if (b > 120)
-			*n = b;
-		else
-			*n = 120;
-		*lineptr = buffer;
-	}
-	else if (*n < b)
-	{
-		if (b > 120)
-			*n = b;
-		else
-			*n = 120;
-		*lineptr = buffer;
-	}
-	else
-	{
-		_strcpy(*lineptr, buffer);
-		free(buffer);
-	}
+int len;
+
+for (len = 0; s[len] != 0; len++)
+{
+}
+return (len);
 }
 
 /**
- * _getline - Reads input from a stream.
- * @lineptr: A buffer to store the input.
- * @n: The size of lineptr.
- * @stream: The stream to read from.
- *
- * Return: The number of bytes read.
- */
-ssize_t _getline(char **lineptr, size_t *n, FILE *stream)
+* cmp_chars - compare chars of strings
+* @str: input string.
+* @delim: delimiter.
+*
+* Return: 1 if are equals, 0 if not.
+*/
+int cmp_chars(char str[], const char *delim)
 {
-	static ssize_t input;
-	ssize_t ret;
-	char c = 'x', *buffer;
-	int r;
+unsigned int i, j, k;
 
-	if (input == 0)
-		fflush(stream);
-	else
-		return (-1);
-	input = 0;
+for (i = 0, k = 0; str[i]; i++)
+{
+for (j = 0; delim[j]; j++)
+{
+if (str[i] == delim[j])
+{
+k++;
+break;
+}
+}
+}
+if (i == k)
+return (1);
+return (0);
+}
 
-	buffer = malloc(sizeof(char) * 120);
-	if (!buffer)
-		return (-1);
+/**
+* _strtok - splits a string by some delimiter.
+* @str: input string.
+* @delim: delimiter.
+*
+* Return: string splited.
+*/
+char *_strtok(char str[], const char *delim)
+{
+static char *splitted, *str_end;
+char *str_start;
+unsigned int i, bool;
 
-	while (c != '\n')
-	{
-		r = read(STDIN_FILENO, &c, 1);
-		if (r == -1 || (r == 0 && input == 0))
-		{
-			free(buffer);
-			return (-1);
-		}
-		if (r == 0 && input != 0)
-		{
-			input++;
-			break;
-		}
+if (str != NULL)
+{
+if (cmp_chars(str, delim))
+return (NULL);
+splitted = str; /*Store first address*/
+i = _strlen(str);
+str_end = &str[i]; /*Store last address*/
+}
+str_start = splitted;
+if (str_start == str_end) /*Reaching the end*/
+return (NULL);
 
-		if (input >= 120)
-			buffer = _realloc(buffer, input, input + 1);
+for (bool = 0; *splitted; splitted++)
+{
+/*Breaking loop finding the next token*/
+if (splitted != str_start)
+if (*splitted && *(splitted - 1) == '\0')
+break;
+/*Replacing delimiter for null char*/
+for (i = 0; delim[i]; i++)
+{
+if (*splitted == delim[i])
+{
+*splitted = '\0';
+if (splitted == str_start)
+str_start++;
+break;
+}
+}
+if (bool == 0 && *splitted) /*Str != Delim*/
+bool = 1;
+}
+if (bool == 0) /*Str == Delim*/
+return (NULL);
+return (str_start);
+}
 
-		buffer[input] = c;
-		input++;
-	}
-	buffer[input] = '\0';
+/**
+* _isdigit - defines if string passed is a number
+*
+* @s: input string
+* Return: 1 if string is a number. 0 in other case.
+*/
+int _isdigit(const char *s)
+{
+unsigned int i;
 
-	assign_lineptr(lineptr, n, buffer, input);
-
-	ret = input;
-	if (r != 0)
-		input = 0;
-	return (ret);
+for (i = 0; s[i]; i++)
+{
+if (s[i] < 48 || s[i] > 57)
+return (0);
+}
+return (1);
 }
