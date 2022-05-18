@@ -1,72 +1,100 @@
 #include "shell.h"
 
-char *error_126(char **args);
-char *error_127(char **args);
-
 /**
- * error_126 - Creates an error message for permission denied failures.
- * @args: An array of arguments passed to the command.
- *
- * Return: The error string.
- */
-char *error_126(char **args)
+* get_len - Get the lenght of a number.
+* @n: type int number.
+* Return: Lenght of a number.
+*/
+int get_len(int n)
 {
-	char *error, *hist_str;
-	int len;
+unsigned int n1;
+int lenght = 1;
 
-	hist_str = _itoa(hist);
-	if (!hist_str)
-		return (NULL);
+if (n < 0)
+{
+lenght++;
+n1 = n * -1;
+}
+else
+{
+n1 = n;
+}
+while (n1 > 9)
+{
+lenght++;
+n1 = n1 / 10;
+}
 
-	len = _strlen(name) + _strlen(hist_str) + _strlen(args[0]) + 24;
-	error = malloc(sizeof(char) * (len + 1));
-	if (!error)
-	{
-		free(hist_str);
-		return (NULL);
-	}
+return (lenght);
+}
+/**
+* aux_itoa - function converts int to string.
+* @n: type int number
+* Return: String.
+*/
+char *aux_itoa(int n)
+{
+unsigned int n1;
+int lenght = get_len(n);
+char *buffer;
 
-	_strcpy(error, name);
-	_strcat(error, ": ");
-	_strcat(error, hist_str);
-	_strcat(error, ": ");
-	_strcat(error, args[0]);
-	_strcat(error, ": Permission denied\n");
+buffer = malloc(sizeof(char) * (lenght + 1));
+if (buffer == 0)
+return (NULL);
 
-	free(hist_str);
-	return (error);
+*(buffer + lenght) = '\0';
+
+if (n < 0)
+{
+n1 = n * -1;
+buffer[0] = '-';
+}
+else
+{
+n1 = n;
+}
+
+lenght--;
+do {
+*(buffer + lenght) = (n1 % 10) + '0';
+n1 = n1 / 10;
+lenght--;
+}
+while (n1 > 0)
+;
+return (buffer);
 }
 
 /**
- * error_127 - Creates an error message for command not found failures.
- * @args: An array of arguments passed to the command.
- *
- * Return: The error string.
- */
-char *error_127(char **args)
+* _atoi - converts a string to an integer.
+* @s: input string.
+* Return: integer.
+*/
+int _atoi(char *s)
 {
-	char *error, *hist_str;
-	int len;
+unsigned int count = 0, size = 0, oi = 0, pn = 1, m = 1, i;
 
-	hist_str = _itoa(hist);
-	if (!hist_str)
-		return (NULL);
+while (*(s + count) != '\0')
+{
+if (size > 0 && (*(s + count) < '0' || *(s + count) > '9'))
+break;
 
-	len = _strlen(name) + _strlen(hist_str) + _strlen(args[0]) + 16;
-	error = malloc(sizeof(char) * (len + 1));
-	if (!error)
-	{
-		free(hist_str);
-		return (NULL);
-	}
+if (*(s + count) == '-')
+pn *= -1;
 
-	_strcpy(error, name);
-	_strcat(error, ": ");
-	_strcat(error, hist_str);
-	_strcat(error, ": ");
-	_strcat(error, args[0]);
-	_strcat(error, ": not found\n");
+if ((*(s + count) >= '0') && (*(s + count) <= '9'))
+{
+if (size > 0)
+m *= 10;
+size++;
+}
+count++;
+}
 
-	free(hist_str);
-	return (error);
+for (i = count - size; i < count; i++)
+{
+oi = oi + ((*(s + i) - 48) * m);
+m /= 10;
+}
+return (oi * pn);
 }
