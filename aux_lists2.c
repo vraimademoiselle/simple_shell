@@ -1,74 +1,61 @@
 #include "shell.h"
-char **_copyenv(void);
-void free_env(void);
-char **_getenv(const char *var);
 
 /**
- * _copyenv - Creates a copy of the environment.
- *
- * Return: If an error occurs - NULL.
- *         O/w - a double pointer to the new copy.
- */
-char **_copyenv(void)
+* add_rvar_node - adds a variable at the end
+* of a r_var list.
+* @head: head of the linked list.
+* @lvar: length of the variable.
+* @val: value of the variable.
+* @lval: length of the value.
+* Return: address of the head.
+*/
+r_var *add_rvar_node(r_var **head, int lvar, char *val, int lval)
 {
-	char **new_environ;
-	size_t size;
-	int index;
+r_var *new, *temp;
 
-	for (size = 0; environ[size]; size++)
-		;
+new = malloc(sizeof(r_var));
+if (new == NULL)
+return (NULL);
 
-	new_environ = malloc(sizeof(char *) * (size + 1));
-	if (!new_environ)
-		return (NULL);
+new->len_var = lvar;
+new->val = val;
+new->len_val = lval;
 
-	for (index = 0; environ[index]; index++)
-	{
-		new_environ[index] = malloc(_strlen(environ[index]) + 1);
+new->next = NULL;
+temp = *head;
 
-		if (!new_environ[index])
-		{
-			for (index--; index >= 0; index--)
-				free(new_environ[index]);
-			free(new_environ);
-			return (NULL);
-		}
-		_strcpy(new_environ[index], environ[index]);
-	}
-	new_environ[index] = NULL;
+if (temp == NULL)
+{
+*head = new;
+}
+else
+{
+while (temp->next != NULL)
+temp = temp->next;
+temp->next = new;
+}
 
-	return (new_environ);
+return (*head);
 }
 
 /**
- * free_env - Frees the the environment copy.
- */
-void free_env(void)
+* free_rvar_list - frees a r_var list
+* @head: head of the linked list.
+* Return: no return.
+*/
+void free_rvar_list(r_var **head)
 {
-	int index;
+r_var *temp;
+r_var *curr;
 
-	for (index = 0; environ[index]; index++)
-		free(environ[index]);
-	free(environ);
+if (head != NULL)
+{
+curr = *head;
+while ((temp = curr) != NULL)
+{
+curr = curr->next;
+free(temp);
 }
-
-/**
- * _getenv - Gets an environmental variable from the PATH
- * @var: The name of the environmental variable to get
- *
- * Return: If the environmental variable does not exist - NULL
- *         Otherwise - a pointer to the environmental variable
- */
-char **_getenv(const char *var)
-{
-	int index, len;
-
-	len = _strlen(var);
-	for (index = 0; environ[index]; index++)
-	{
-		if (_strncmp(var, environ[index], len) == 0)
-			return (&environ[index]);
-	}
-
-	return (NULL);
+*head = NULL;
+}
 }
