@@ -1,132 +1,111 @@
 #include "shell.h"
-int shellby_env(char **args, char __attribute__((__unused__)) **front);
-int shellby_setenv(char **args, char __attribute__((__unused__)) **front);
-int shellby_unsetenv(char **args, char __attribute__((__unused__)) **front);
 
 /**
- * shellby_env - Prints the current environment.
- * @args: An array of arguments passed to the shell.
- * @front: A double pointer to the beginning of args.
- *
- * Return: If an error occurs - -1.
- *	   Otherwise - 0.
- *
- * Description: Prints one variable per line in the
- *              format 'variable'='value'.
- */
-int shellby_env(char **args, char __attribute__((__unused__)) **front)
+* add_sep_node_end - adds a separator found at the end
+* of a sep_list.
+* @head: head of the linked list.
+* @sep: separator found (; | &).
+* Return: address of the head.
+*/
+sep_list *add_sep_node_end(sep_list **head, char sep)
 {
-	int index;
-	char nc = '\n';
+sep_list *new, *temp;
 
-	if (!environ)
-		return (-1);
+new = malloc(sizeof(sep_list));
+if (new == NULL)
+return (NULL);
 
-	for (index = 0; environ[index]; index++)
-	{
-		write(STDOUT_FILENO, environ[index], _strlen(environ[index]));
-		write(STDOUT_FILENO, &nc, 1);
-	}
+new->separator = sep;
+new->next = NULL;
+temp = *head;
 
-	(void)args;
-	return (0);
+if (temp == NULL)
+{
+*head = new;
+}
+else
+{
+while (temp->next != NULL)
+temp = temp->next;
+temp->next = new;
+}
+
+return (*head);
 }
 
 /**
- * shellby_setenv - Changes or adds an environmental variable to the PATH.
- * @args: An array of arguments passed to the shell.
- * @front: A double pointer to the beginning of args.
- * Description: args[1] is the name of the new or existing PATH variable.
- *              args[2] is the value to set the new or changed variable to.
- *
- * Return: If an error occurs - -1.
- *         Otherwise - 0.
- */
-int shellby_setenv(char **args, char __attribute__((__unused__)) **front)
+* free_sep_list - frees a sep_list
+* @head: head of the linked list.
+* Return: no return.
+*/
+void free_sep_list(sep_list **head)
 {
-	char **env_var = NULL, **new_environ, *new_value;
-	size_t size;
-	int index;
+sep_list *temp;
+sep_list *curr;
 
-	if (!args[0] || !args[1])
-		return (create_error(args, -1));
-
-	new_value = malloc(_strlen(args[0]) + 1 + _strlen(args[1]) + 1);
-	if (!new_value)
-		return (create_error(args, -1));
-	_strcpy(new_value, args[0]);
-	_strcat(new_value, "=");
-	_strcat(new_value, args[1]);
-
-	env_var = _getenv(args[0]);
-	if (env_var)
-	{
-		free(*env_var);
-		*env_var = new_value;
-		return (0);
-	}
-	for (size = 0; environ[size]; size++)
-		;
-
-	new_environ = malloc(sizeof(char *) * (size + 2));
-	if (!new_environ)
-	{
-		free(new_value);
-		return (create_error(args, -1));
-	}
-
-	for (index = 0; environ[index]; index++)
-		new_environ[index] = environ[index];
-
-	free(environ);
-	environ = new_environ;
-	environ[index] = new_value;
-	environ[index + 1] = NULL;
-
-	return (0);
+if (head != NULL)
+{
+curr = *head;
+while ((temp = curr) != NULL)
+{
+curr = curr->next;
+free(temp);
+}
+*head = NULL;
+}
 }
 
 /**
- * shellby_unsetenv - Deletes an environmental variable from the PATH.
- * @args: An array of arguments passed to the shell.
- * @front: A double pointer to the beginning of args.
- * Description: args[1] is the PATH variable to remove.
- *
- * Return: If an error occurs - -1.
- *         Otherwise - 0.
- */
-int shellby_unsetenv(char **args, char __attribute__((__unused__)) **front)
+* add_line_node_end - adds a command line at the end
+* of a line_list.
+* @head: head of the linked list.
+* @line: command line.
+* Return: address of the head.
+*/
+line_list *add_line_node_end(line_list **head, char *line)
 {
-	char **env_var, **new_environ;
-	size_t size;
-	int index, index2;
+line_list *new, *temp;
 
-	if (!args[0])
-		return (create_error(args, -1));
-	env_var = _getenv(args[0]);
-	if (!env_var)
-		return (0);
+new = malloc(sizeof(line_list));
+if (new == NULL)
+return (NULL);
 
-	for (size = 0; environ[size]; size++)
-		;
+new->line = line;
+new->next = NULL;
+temp = *head;
 
-	new_environ = malloc(sizeof(char *) * size);
-	if (!new_environ)
-		return (create_error(args, -1));
+if (temp == NULL)
+{
+*head = new;
+}
+else
+{
+while (temp->next != NULL)
+temp = temp->next;
+temp->next = new;
+}
 
-	for (index = 0, index2 = 0; environ[index]; index++)
-	{
-		if (*env_var == environ[index])
-		{
-			free(*env_var);
-			continue;
-		}
-		new_environ[index2] = environ[index];
-		index2++;
-	}
-	free(environ);
-	environ = new_environ;
-	environ[size - 1] = NULL;
+return (*head);
+}
 
-	return (0);
+/**
+* free_line_list - frees a line_list
+* @head: head of the linked list.
+* Return: no return.
+*/
+void free_line_list(line_list **head)
+{
+line_list *temp;
+line_list *curr;
+
+if (head != NULL)
+{
+curr = *head;
+while ((temp = curr) != NULL)
+{
+curr = curr->next;
+free(temp);
+}
+*head = NULL;
+}
 }
