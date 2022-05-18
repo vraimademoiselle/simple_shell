@@ -82,4 +82,4 @@ char *_strncat(char *dest, const char *src, size_t n)
 	dest[dest_len + i] = '\0';
 
 	return (dest);
-i}
+}
