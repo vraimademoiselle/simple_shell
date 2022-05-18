@@ -1,140 +1,205 @@
 #include "shell.h"
 
-char *fill_path_dir(char *path);
-list_t *get_path_dir(char *path);
-
 /**
- * get_location - Locates a command in the PATH.
- * @command: The command to locate.
- *
- * Return: If an error occurs or the command cannot be located - NULL.
- * Otherwise - full pathname of the command.
- */
-char *get_location(char *command)
+* is_cdir - checks ":" if is in the current directory.
+* @path: type char pointer char.
+* @i: type int pointer of index.
+* Return: 1 if the path is searchable in the cd, 0 otherwise.
+*/
+int is_cdir(char *path, int *i)
 {
-	char **path, *temp;
-	list_t *dirs, *head;
-	struct stat st;
+if (path[*i] == ':')
+return (1);
 
-	path = _getenv("PATH");
-	if (!path || !(*path))
-		return (NULL);
+while (path[*i] != ':' && path[*i])
+{
+*i += 1;
+}
 
-	dirs = get_path_dir(*path + 5);
-	head = dirs;
+if (path[*i])
+*i += 1;
 
-	while (dirs)
-	{
-		temp = malloc(_strlen(dirs->dir) + _strlen(command) + 2);
-		if (!temp)
-			return (NULL);
-
-		_strcpy(temp, dirs->dir);
-		_strcat(temp, "/");
-		_strcat(temp, command);
-
-		if (stat(temp, &st) == 0)
-		{
-			free_list(head);
-			return (temp);
-		}
-
-		dirs = dirs->next;
-		free(temp);
-	}
-
-	free_list(head);
-
-	return (NULL);
+return (0);
 }
 
 /**
- * fill_path_dir - Copies path but also replaces leading/sandwiched/trailing
- *		   colons (:) with current working directory.
- * @path: The colon-separated list of directories.
- *
- * Return: A copy of path with any leading/sandwiched/trailing colons replaced
- *	   with the current working directory.
- */
-char *fill_path_dir(char *path)
+* _which - locates a command
+*
+* @cmd: command name
+* @_environ: environment variable
+* Return: location of the command.
+*/
+char *_which(char *cmd, char **_environ)
 {
-	int i, length = 0;
-	char *path_copy, *pwd;
+char *path, *ptr_path, *token_path, *dir;
+int len_dir, len_cmd, i;
+struct stat st;
 
-	pwd = *(_getenv("PWD")) + 4;
-	for (i = 0; path[i]; i++)
-	{
-		if (path[i] == ':')
-		{
-			if (path[i + 1] == ':' || i == 0 || path[i + 1] == '\0')
-				length += _strlen(pwd) + 1;
-			else
-				length++;
-		}
-		else
-			length++;
-	}
-	path_copy = malloc(sizeof(char) * (length + 1));
-	if (!path_copy)
-		return (NULL);
-	path_copy[0] = '\0';
-	for (i = 0; path[i]; i++)
-	{
-		if (path[i] == ':')
-		{
-			if (i == 0)
-			{
-				_strcat(path_copy, pwd);
-				_strcat(path_copy, ":");
-			}
-			else if (path[i + 1] == ':' || path[i + 1] == '\0')
-			{
-				_strcat(path_copy, ":");
-				_strcat(path_copy, pwd);
-			}
-			else
-				_strcat(path_copy, ":");
-		}
-		else
-		{
-			_strncat(path_copy, &path[i], 1);
-		}
-	}
-	return (path_copy);
+path = _getenv("PATH", _environ);
+if (path)
+{
+ptr_path = _strdup(path);
+len_cmd = _strlen(cmd);
+token_path = _strtok(ptr_path, ":");
+i = 0;
+while (token_path != NULL)
+{
+if (is_cdir(path, &i))
+if (stat(cmd, &st) == 0)
+return (cmd);
+len_dir = _strlen(token_path);
+dir = malloc(len_dir + len_cmd + 2);
+_strcpy(dir, token_path);
+_strcat(dir, "/");
+_strcat(dir, cmd);
+_strcat(dir, "\0");
+if (stat(dir, &st) == 0)
+{
+free(ptr_path);
+return (dir);
+}
+free(dir);
+token_path = _strtok(NULL, ":");
+}
+free(ptr_path);
+if (stat(cmd, &st) == 0)
+return (cmd);
+return (NULL);
+}
+if (cmd[0] == '/')
+if (stat(cmd, &st) == 0)
+return (cmd);
+return (NULL);
 }
 
 /**
- * get_path_dir - Tokenizes a colon-separated list of
- *                directories into a list_s linked list.
- * @path: The colon-separated list of directories.
- *
- * Return: A pointer to the initialized linked list.
- */
-list_t *get_path_dir(char *path)
+* is_executable - determines if is an executable
+*
+* @datash: data structure
+* Return: 0 if is not an executable, other number if it does
+*/
+int is_executable(data_shell *datash)
 {
-	int index;
-	char **dirs, *path_copy;
-	list_t *head = NULL;
+struct stat st;
+int i;
+char *input;
 
-	path_copy = fill_path_dir(path);
-	if (!path_copy)
-		return (NULL);
-	dirs = _strtok(path_copy, ":");
-	free(path_copy);
-	if (!dirs)
-		return (NULL);
+input = datash->args[0];
+for (i = 0; input[i]; i++)
+{
+if (input[i] == '.')
+{
+if (input[i + 1] == '.')
+return (0);
+if (input[i + 1] == '/')
+continue;
+else
+break;
+}
+else if (input[i] == '/' && i != 0)
+{
+if (input[i + 1] == '.')
+continue;
+i++;
+break;
+}
+else
+break;
+}
+if (i == 0)
+return (0);
 
-	for (index = 0; dirs[index]; index++)
-	{
-		if (add_node_end(&head, dirs[index]) == NULL)
-		{
-			free_list(head);
-			free(dirs);
-			return (NULL);
-		}
-	}
+if (stat(input + i, &st) == 0)
+{
+return (i);
+}
+get_error(datash, 127);
+return (-1);
+}
 
-	free(dirs);
+/**
+* check_error_cmd - verifies if user has permissions to access
+*
+* @dir: destination directory
+* @datash: data structure
+* Return: 1 if there is an error, 0 if not
+*/
+int check_error_cmd(char *dir, data_shell *datash)
+{
+if (dir == NULL)
+{
+get_error(datash, 127);
+return (1);
+}
 
-	return (head);
+if (_strcmp(datash->args[0], dir) != 0)
+{
+if (access(dir, X_OK) == -1)
+{
+get_error(datash, 126);
+free(dir);
+return (1);
+}
+free(dir);
+}
+else
+{
+if (access(datash->args[0], X_OK) == -1)
+{
+get_error(datash, 126);
+return (1);
+}
+}
+
+return (0);
+}
+
+/**
+* cmd_exec - executes command lines
+*
+* @datash: data relevant (args and input)
+* Return: 1 on success.
+*/
+int cmd_exec(data_shell *datash)
+{
+pid_t pd;
+pid_t wpd;
+int state;
+int exec;
+char *dir;
+(void) wpd;
+
+exec = is_executable(datash);
+if (exec == -1)
+return (1);
+if (exec == 0)
+{
+dir = _which(datash->args[0], datash->_environ);
+if (check_error_cmd(dir, datash) == 1)
+return (1);
+}
+
+pd = fork();
+if (pd == 0)
+{
+if (exec == 0)
+dir = _which(datash->args[0], datash->_environ);
+else
+dir = datash->args[0];
+execve(dir + exec, datash->args, datash->_environ);
+}
+else if (pd < 0)
+{
+perror(datash->av[0]);
+return (1);
+}
+else
+{
+do {
+wpd = waitpid(pd, &state, WUNTRACED);
+} while (!WIFEXITED(state) && !WIFSIGNALED(state));
+}
+
+datash->status = state / 256;
+return (1);
 }
